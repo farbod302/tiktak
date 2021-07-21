@@ -6,21 +6,47 @@ const router = express.Router()
 const { getBody, api, addScoreToIntroduser } = require('../helperFunc')
 const { uid } = require('uid')
 var request = require('request');
+const Item = require('../db/item')
 
 
 router.post('/add_to_cart', async (req, res) => {
     const data = getBody(req.body)
-    const { id, item } = data
-    await User.findByIdAndUpdate(id, { $push: { "cart.items": item } })
+    // item = {
+    //     id: "شناسه کالا",
+    //     color: "رنگ کالا",
+    //     size: "سایز کالا"
+    //     amount : "تعداد"
+    // }
+
+
+    const { id, item, price } = data
+    console.log(data);
+    await User.findByIdAndUpdate(id, { $push: { "cart.items": item }, $inc: { "cart.total": price * item.amount } })
     res.json(true)
+})
+
+
+router.post('/contain_of',async (req, res) => {
+    var itemIds = []
+    const data = getBody(req.body),
+        { id } = data,
+        user = await User.findById(id, { cart: 1 })
+    user.cart.items.map(each => itemsIds.push(each.id))
+    var off = await Item.find({ id: { $inc: itemIds }, containOff: true })
+    if (off.length > 0) {
+        res.json(true)
+        return
+    }
+    res.json(false)
+
+
 })
 
 router.post('/create_pay', async (req, res) => {
     const data = getBody(req.body)
-    const { id, off } = data
+    const { id, off, price } = data
     var user = await User.findById(id, { cart: 1, identity: 1 })
     var items = user.cart.items,
-        amount = user.cart.total,
         phone = user.identity['phone'],
         orderId = uid(6)
 
@@ -38,7 +64,7 @@ router.post('/create_pay', async (req, res) => {
         },
         body: {
             'order_id': orderId,
-            'amount': Number(amount) * 10,
+            'amount': price * 10,
             'phone': phone,
             'desc': `خرید  ${id}`,
             'callback': `${api}/user/pay_res`,
@@ -54,11 +80,10 @@ router.post('/create_pay', async (req, res) => {
             orderId,
             shopId,
             items,
-            amount,
+            price,
             date: Date.now()
         }
         { off ? newShop["off"] = off : null }
-        console.log(body);
         await new Shop(newShop).save()
         res.json({
             status: true,

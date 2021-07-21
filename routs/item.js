@@ -8,8 +8,6 @@ const { getBody, pagination, calcPagination, getRecomendItems } = require('../he
 router.get('/all_items', (req, res) => {
     var allItems = Item.find({ depo: true }, { name: 1, price: 1, off: 1, mainImg: 1, })
     allItems.then(result => { res.json({ status: true, items: result }) })
-}).catch(() => {
-    res.json({ status: false, items: [] })
 })
 
 //برگرداندن ایتم های یک کتگوری خاص مثلا کفش مجلسی به تعداد مشخص
@@ -49,7 +47,7 @@ router.post('/page_count', (req, res) => {
 
 
 router.post('/view', (req, res) => {
-    const
+    var
         data = getBody(req.body),
         { id, fastView } = data,
         item
@@ -65,33 +63,14 @@ router.post('/view', (req, res) => {
 })
 
 
-// router.post('/depo', (req, res) => {
-//     const
-//         data = getBody(req.body),
-//         { id, color, size } = data,
-//         item = Item.findById(id, { allTypes: 1 })
-
-//     item.then(result => {
-//         var filtered = result.allTypes.find(each => each.color === color && each.size === size)
-//         {
-//             filtered ?
-//                 res.json({ status: true, depo: filtered.depo })
-//                 :
-//                 res.json({ status: true, depo: 0 })
-//         }
-//     }).catch(() => {
-//         res.json({ status: false, depo: 0 })
-//     })
-
-// })
 
 
 router.post('/recomandation', async (req, res) => {
 
     const data = getBody(req.body)
     const { item } = data
-    var item = await Item.findOne({ id: item }, { tags: 1 }),
-        tags = item.tags
+    var selectedItem = await Item.findOne({ id: item }, { tags: 1 }),
+        tags = selectedItem.tags
     if (tags) {
         var recItemIds = await getRecomendItems(tags)
         var items = await Item.find({ id: { $in: recItemIds } })

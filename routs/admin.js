@@ -129,4 +129,24 @@ router.post('/send_sms', async (req, res) => {
     })
 })
 
+
+router.post('/contain_off', async (req, res) => {
+    const { mainCategory, secondaryCategory, containe } = req.body
+    if (mainCategory === -1) {
+        await Item.updateMany({}, { $set: { containOff: containe } })
+        res.json(true)
+    }
+    else {
+        if (secondaryCategory === -1) {
+            await Item.updateMany({ mainCategory: mainCategory }, { $set: { containOff: containe } })
+            res.json(true)
+
+        }
+        else {
+            await Item.updateMany({ mainCategory: mainCategory, secondaryCategory: secondaryCategory }, { $set: { containOff: containe } })
+            res.json(true)
+        }
+    }
+})
+
 module.exports = router

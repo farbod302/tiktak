@@ -46,9 +46,9 @@ router.post('/sign_up', async (req, res) => {
         name, lastName, phone,
         birthday: {
             year,
-            month,
-            day,
-            birthday: `${month}/${day}`,
+            month: Number(month),
+            day: Number(day),
+            birthday: `${Number(month)}/${Number(day)}`,
             fullDate: jdate._d,
         },
     }
@@ -64,7 +64,7 @@ router.post('/sign_up', async (req, res) => {
 router.post('/log_in', async (req, res) => {
     const data = getBody(req.body)
     const { phone } = data
-    var user = await User.findOne({ identity: phone })
+    var user = await User.findOne({ "identity.phone": phone })
     if (user) {
         res.json({ status: true, user })
         return
