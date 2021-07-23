@@ -14,12 +14,12 @@ router.post('/add_item', async (req, res) => {
     const {
         name, mainCategory, secondaryCategory
         , off, tags, price, sizes, colors
-        , mainImg, imgs, info, } = req.body
+        , mainImg, imgs, info, depo, containOff } = req.body
 
     var newItem = {
         id: id,
         name, mainCategory, secondaryCategory
-        , off, tags, price, sizes, colors, info
+        , off, tags, price, sizes, colors, info, depo, containOff
     }
     var itemImgs = [...imgs]
     itemImgs.push(mainImg)
@@ -55,7 +55,7 @@ router.post('/add_item', async (req, res) => {
 
 router.post('/edit_item_info', async (req, res) => {
     const { id, name, mainCategory, secondaryCategory
-        , off, tags, price, info } = req.body
+        , off, tags, price, info, sizes, colors, containOff, depo } = req.body
 
     var item = await Item.findOne({ id: id })
     item.name = name
@@ -65,6 +65,10 @@ router.post('/edit_item_info', async (req, res) => {
     item.tags = tags
     item.price = price
     item.info = info
+    item.colors = colors
+    item.sizes = sizes
+    item.containOff = containOff
+    item.depo = depo
     item.save().then(() => {
         res.json(true)
     })
@@ -147,6 +151,20 @@ router.post('/contain_off', async (req, res) => {
             res.json(true)
         }
     }
+})
+
+
+router.post('/item_search', async (req, res) => {
+    const { name, id } = req.body
+    var items = await Item.find({}, { name: 1, id: 1 })
+    if (name) {
+        items = items.filter(each => each.name.indexOf(name) > -1)
+    }
+    if (id) {
+        items = items.filter(each => each.id.indexOf(id) > -1)
+    }
+    await res.json(items)
+
 })
 
 module.exports = router

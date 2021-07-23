@@ -138,7 +138,7 @@ const addImgs = (id, imgs) => {
   return new Promise(resolve => {
     fs.mkdir(`${__dirname}/item/${id}`, (() => {
       imgs.reverse().forEach((each, index) => {
-        path = base64Img.imgSync(each, `${__dirname}/item/${id}`, index + 1)
+        base64Img.imgSync(each, `${__dirname}/item/${id}`, index + 1)
         if (index + 1 === imgs.length) {
           resolve()
         }
