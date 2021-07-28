@@ -7,6 +7,7 @@ const { getBody, api, addScoreToIntroduser } = require('../helperFunc')
 const { uid } = require('uid')
 var request = require('request');
 const Item = require('../db/item')
+const Blog = require('../db/blog')
 
 
 router.post('/add_to_cart', async (req, res) => {
@@ -26,7 +27,7 @@ router.post('/add_to_cart', async (req, res) => {
 })
 
 
-router.post('/contain_of',async (req, res) => {
+router.post('/contain_of', async (req, res) => {
     var itemIds = []
     const data = getBody(req.body),
         { id } = data,
@@ -99,6 +100,8 @@ router.post('/pay_res', async (req, res) => {
     const pay = await Shop.findOne({ orderId: order_id })
     const user = pay.user
     var off = pay.off
+    var itemIds = []
+    pay.items.map(each => itemIds.push(each.id))
     if (pay.use === true || status !== "10") {
         await Shop.findOneAndUpdate({ orderId: order_id }, { $set: { use: true } })
         res.redirect(`${backUrl}/pay_result?status=false&id=0`)
@@ -128,6 +131,7 @@ router.post('/pay_res', async (req, res) => {
                 if (off) {
                     await Off.findOneAndUpdate({ code: off }, { $set: { use: true } })
                 }
+                Item.updateMany({ id: { $in: itemIds } }, { "status.sell": { $inc: 1 } })
                 await addScoreToIntroduser(user)
                 res.redirect(`${backUrl}/pay_result?status=true&id=${body.track_id}`)
             }
@@ -157,6 +161,11 @@ router.post('/get_user_addreses', async (req, res) => {
 
 })
 
+router.get('/blogs', (req, res) => {
+    Blog.find({}).then((result) => { res.json(result) })
+})
+
+
 
 router.post('/add_new_addres', async (req, res) => {
     const data = getBody(req.body)
@@ -166,6 +175,17 @@ router.post('/add_new_addres', async (req, res) => {
 
 })
 
+
+router.post('/get_user_from_phone', async (req, res) => {
+    const { phone } = req.body
+    var user = await User.findOne({ "identity.phone": phone })
+    if (!user) {
+        res.json({ name: "ناشناس" })
+    }
+    else {
+        res.json({ name: `${user.identity.name} ${user.identity.lastName}` })
+    }
+})
 
 
 

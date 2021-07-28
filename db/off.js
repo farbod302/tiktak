@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-//test
 const off = mongoose.Schema({
 
     code: String,
@@ -9,7 +8,7 @@ const off = mongoose.Schema({
         default: false
     },
     user: String,
-    dip: Number
+    dep: Number
 
 })
 

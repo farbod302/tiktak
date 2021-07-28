@@ -1,10 +1,13 @@
 const express = require('express')
 const router = express.Router()
 const { uid } = require('uid')
-const { addImgs, multItems, removeImgs, createOffCode } = require('../helperFunc')
+const { addImgs, multItems, removeImgs, createOffCode, addBlogImg } = require('../helperFunc')
 const Item = require('../db/item')
 const User = require('../db/user')
+const Shop = require('../db/shop')
+const Blog = require('../db/blog')
 const TrezSmsClient = require("trez-sms-client");
+const Off = require('../db/off')
 const client = new TrezSmsClient("daaraan", "81912601320");
 
 
@@ -19,7 +22,12 @@ router.post('/add_item', async (req, res) => {
     var newItem = {
         id: id,
         name, mainCategory, secondaryCategory
-        , off, tags, price, sizes, colors, info, depo, containOff
+        , off, tags, price, sizes, colors, info, depo, containOff,
+        status: {
+            view: 0,
+            sell: 0,
+            date: Date.now()
+        }
     }
     var itemImgs = [...imgs]
     itemImgs.push(mainImg)
@@ -100,11 +108,13 @@ router.post('/edit_item_img', async (req, res) => {
 router.post('/create_off_code', async (req, res) => {
     const { user, amount, day } = req.body
     var selectedUser
+    console.log(req.body);
     { user ? selectedUser = user : selectedUser = "0" }
     var code = await createOffCode(selectedUser, amount, day)
     res.json({
         status: true,
-        code
+        code: code.code,
+        dep: code.dep
     })
 
 })
@@ -166,5 +176,54 @@ router.post('/item_search', async (req, res) => {
     await res.json(items)
 
 })
+
+
+
+router.post("/get_pays", async (req, res) => {
+    const { status } = req.body
+    var pays
+    if (status) {
+        pays = await Shop.find({ status: status }, { items: 1, user: 1, status: 1, amount: 1, orderType: 1, date: 1, trackId: 1 })
+    }
+    else {
+        pays = await Shop.find({}, { items: 1, user: 1, status: 1, amount: 1, orderType: 1, date: 1, trackId: 1 })
+
+    }
+    res.json(pays)
+})
+
+
+router.get('/off_list', async (req, res) => {
+    const offs = await Off.find({})
+    res.json(offs)
+})
+
+
+
+router.post('/add_blog', async (req, res) => {
+
+
+    const { img, title, text } = req.body
+    const id = uid(4)
+    const newBlog = {
+        id,
+        title,
+        text
+    }
+    await addBlogImg(img, id)
+
+    new Blog(newBlog).save().then(() => { res.json(true) })
+
+
+})
+
+router.post('/delete_blog', (req, res) => {
+    const { id } = req.body
+    Blog.findOneAndRemove({ id: id }).then(() => {
+
+        res.json(true)
+    })
+})
+
 
 module.exports = router

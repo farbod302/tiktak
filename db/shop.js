@@ -20,7 +20,9 @@ const shop = mongoose.Schema({
         type: String,
         defult: "0"
     },
-    date: Number
+    date: Number,
+    orderType: Boolean,
+    adrres: String
 
 
 })

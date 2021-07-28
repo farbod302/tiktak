@@ -7,6 +7,8 @@ const app = express()
 app.use(cors())
 
 app.use("/item", express.static('item'))
+app.use("/blog", express.static('blog'))
+app.use("/slider", express.static('sliders'))
 app.use(bodyParser.json({ limit: '7mb' }));
 app.use(bodyParser.urlencoded({ limit: '7mb', extended: true }));
 

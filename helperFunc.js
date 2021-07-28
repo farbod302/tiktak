@@ -148,6 +148,13 @@ const addImgs = (id, imgs) => {
 }
 
 
+const addBlogImg = (img, id) => {
+  return new Promise(resolve => {
+    base64Img.imgSync(img, `${__dirname}/blog`, id)
+    resolve()
+  })
+}
+
 const removeImgs = (id) => {
 
   return new Promise(resolve => {
@@ -165,19 +172,21 @@ const removeImgs = (id) => {
 }
 
 
+
+
 const createOffCode = (user, amount, day) => {
 
   return new Promise(resolve => {
     const code = uid(6)
     var now = Date.now(),
-      dep = now + (1000 * 60 * 60 * 24 * day),
+      dep = new JDate(new Date(now + (1000 * 60 * 60 * 24 * day))).format('dddd DD MMMM YYYY'),
       off = {
         code,
         amount,
-        dep,
+        dep: now + (1000 * 60 * 60 * 24 * day),
         user
       }
-    new Off(off).save().then(() => { resolve(code) })
+    new Off(off).save().then(() => { resolve({ code, dep }) })
   })
 
 }
@@ -215,13 +224,13 @@ ${code}
 const getRecomendItems = (tags) => {
   return new Promise(async resolve => {
     var recomendation = []
-    var sameTags = await Item.find({ tags: { $all: tags } }, { id: 1 }).sort({ view: -1 })
+    var sameTags = await Item.find({ tags: { $all: tags } }, { id: 1 }).sort({ "status:sell": -1 })
     sameTags.forEach(each => recomendation.push(each.id))
     if (recomendation.length >= 6) resolve(recomendation.slice(0, 5))
-    var semularItems = await Item.find({ tags: { $in: tags } }, { id: 1 }).sort({ view: -1 })
+    var semularItems = await Item.find({ tags: { $in: tags } }, { id: 1 }).sort({ "status:sell": -1 })
     semularItems.forEach(each => recomendation.push(each.id))
     if (recomendation.length >= 6) resolve(recomendation.slice(0, 5))
-    var randomItem = await Item.find({ id: { $nin: recomendation } }, { id: 1 }).sort({ view: -1 })
+    var randomItem = await Item.find({ id: { $nin: recomendation } }, { id: 1 }).sort({ "status:sell": -1 }).limit(10)
     randomItem.slice(0, 5).forEach(each => recomendation.push(each.id))
     resolve(recomendation.slice(0, 5))
   })
@@ -287,7 +296,8 @@ module.exports = {
   getRecomendItems,
   mountGenerator,
   api,
-  getMountAndYear
+  getMountAndYear,
+  addBlogImg
 }
 
 

@@ -18,9 +18,8 @@ const item = mongoose.Schema({
         type: Boolean,
         default: true
     },
-    view: {
-        type: Number,
-       dafult: 0
+    status: {
+        type: Object,
     }
 })
 
