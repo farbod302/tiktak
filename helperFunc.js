@@ -229,7 +229,6 @@ const getRecomendItems = (tags, selectedId) => {
     if (recomendation.length >= 6) resolve(recomendation)
     var left
     left = 6 - recomendation.length
-    console.log(left);
     var semularItems = await Item.find({ tags: { $in: tags }, id: { $ne: selectedId } }, { id: 1 })
     semularItems.slice(0, left).forEach(each => {
       recomendation.push(each.id)

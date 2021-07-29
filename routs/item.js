@@ -93,7 +93,7 @@ router.post('/recomandation', async (req, res) => {
 
 router.get("/main_page", async (req, res) => {
 
-    var allItems = await Item.find({ depo: true }, { status: 1, name: 1, price: 1, off: 1, id: 1 })
+    var allItems = await Item.find({ depo: true }, { status: 1, name: 1, price: 1, off: 1, id: 1, imgs: 1 })
     var sorted = []
     var lastItems = []
     sorted = allItems.sort((a, b) => { return b.status.date - a.status.date })
