@@ -18,9 +18,9 @@ const item = mongoose.Schema({
         type: Boolean,
         default: true
     },
-    status: {
-        type: Object,
-    }
+    status: Object,
+    imgs: Array
+
 })
 
 

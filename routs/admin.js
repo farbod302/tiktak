@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const { uid } = require('uid')
-const { addImgs, multItems, removeImgs, createOffCode, addBlogImg } = require('../helperFunc')
+const { addImgs, multItems, removeImgs, createOffCode, addBlogImg, api } = require('../helperFunc')
 const Item = require('../db/item')
 const User = require('../db/user')
 const Shop = require('../db/shop')
@@ -25,7 +25,7 @@ router.post('/add_item', async (req, res) => {
         , off, tags, price, sizes, colors, info, depo, containOff,
         status: {
             view: 0,
-            sell: 0,
+            sell: [],
             date: Date.now()
         }
     }
@@ -34,6 +34,11 @@ router.post('/add_item', async (req, res) => {
     await addImgs(id, itemImgs)
     // var allTypes = multItems(sizes, colors)
     // newItem['allTypes'] = allTypes
+    var imgsList = []
+    for (let i = 1; i <= 5; i++) {
+        imgsList.push(`${api}/item/${id}/${i}.jpg`)
+    }
+    newItem['imgs'] = imgsList
 
     new Item(newItem).save().then(() => {
         res.json(true)

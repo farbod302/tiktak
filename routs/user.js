@@ -131,7 +131,7 @@ router.post('/pay_res', async (req, res) => {
                 if (off) {
                     await Off.findOneAndUpdate({ code: off }, { $set: { use: true } })
                 }
-                Item.updateMany({ id: { $in: itemIds } }, { "status.sell": { $inc: 1 } })
+                Item.updateMany({ id: { $in: itemIds } }, { "status.sell": { $push: user } })
                 await addScoreToIntroduser(user)
                 res.redirect(`${backUrl}/pay_result?status=true&id=${body.track_id}`)
             }

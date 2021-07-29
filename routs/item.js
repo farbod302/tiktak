@@ -6,7 +6,7 @@ const { getBody, pagination, calcPagination, getRecomendItems } = require('../he
 
 
 router.get('/all_items', (req, res) => {
-    var allItems = Item.find({ depo: true }, { name: 1, price: 1, off: 1, mainImg: 1, id: 1 ,mainCategory:1,secondaryCategory:1})
+    var allItems = Item.find({ depo: true }, { info: 0, tags: 0, containOff: 0, depo: 0 })
     allItems.then(result => { res.json({ status: true, items: result }) })
 })
 
@@ -110,7 +110,7 @@ router.get("/main_page", async (req, res) => {
         }
     }
     var mostSell = []
-    sorted = allItems.sort((a, b) => { return b.status.sell - a.status.sell })
+    sorted = allItems.sort((a, b) => { return b.status.sell.length - a.status.sell.length })
     for (let i = 0; i <= 9; i++) {
         if (sorted.length - 1 >= i) {
             mostSell.push(sorted[i])

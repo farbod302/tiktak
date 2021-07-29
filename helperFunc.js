@@ -236,7 +236,7 @@ const getRecomendItems = (tags, selectedId) => {
     })
     if (recomendation.length >= 6) resolve(recomendation)
     left = 6 - recomendation.length
-    var randomItem = await Item.find({ id: { $nin: recomendation }, id: { $ne: selectedId } }, { id: 1 })
+    var randomItem = await Item.find({ id: { $nin: recomendation, $ne: selectedId } }, { id: 1 })
     randomItem.slice(0, left).forEach(each => recomendation.push(each.id))
 
     resolve(recomendation)
@@ -285,7 +285,7 @@ const getMountAndYear = (date) => {
 
 }
 
-const api = 'http://localhost:4545/pay'
+const api = 'http://localhost:4545'
 
 module.exports = {
   removeImgs,
