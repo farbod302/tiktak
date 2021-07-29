@@ -221,18 +221,25 @@ ${code}
 }
 
 
-const getRecomendItems = (tags) => {
+const getRecomendItems = (tags, selectedId) => {
   return new Promise(async resolve => {
     var recomendation = []
-    var sameTags = await Item.find({ tags: { $all: tags } }, { id: 1 }).sort({ "status:sell": -1 })
-    sameTags.forEach(each => recomendation.push(each.id))
-    if (recomendation.length >= 6) resolve(recomendation.slice(0, 5))
-    var semularItems = await Item.find({ tags: { $in: tags } }, { id: 1 }).sort({ "status:sell": -1 })
-    semularItems.forEach(each => recomendation.push(each.id))
-    if (recomendation.length >= 6) resolve(recomendation.slice(0, 5))
-    var randomItem = await Item.find({ id: { $nin: recomendation } }, { id: 1 }).sort({ "status:sell": -1 }).limit(10)
-    randomItem.slice(0, 5).forEach(each => recomendation.push(each.id))
-    resolve(recomendation.slice(0, 5))
+    var sameTags = await Item.find({ tags: { $all: tags }, id: { $ne: selectedId } }, { id: 1 })
+    sameTags.slice(0, 5).forEach(each => recomendation.push(each.id))
+    if (recomendation.length >= 6) resolve(recomendation)
+    var left
+    left = 6 - recomendation.length
+    console.log(left);
+    var semularItems = await Item.find({ tags: { $in: tags }, id: { $ne: selectedId } }, { id: 1 })
+    semularItems.slice(0, left).forEach(each => {
+      recomendation.push(each.id)
+    })
+    if (recomendation.length >= 6) resolve(recomendation)
+    left = 6 - recomendation.length
+    var randomItem = await Item.find({ id: { $nin: recomendation }, id: { $ne: selectedId } }, { id: 1 })
+    randomItem.slice(0, left).forEach(each => recomendation.push(each.id))
+
+    resolve(recomendation)
   })
 
 

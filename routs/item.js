@@ -6,7 +6,7 @@ const { getBody, pagination, calcPagination, getRecomendItems } = require('../he
 
 
 router.get('/all_items', (req, res) => {
-    var allItems = Item.find({ depo: true }, { name: 1, price: 1, off: 1, mainImg: 1, id: 1 })
+    var allItems = Item.find({ depo: true }, { name: 1, price: 1, off: 1, mainImg: 1, id: 1 ,mainCategory:1,secondaryCategory:1})
     allItems.then(result => { res.json({ status: true, items: result }) })
 })
 
@@ -71,10 +71,18 @@ router.post('/recomandation', async (req, res) => {
     const { item } = data
     var selectedItem = await Item.findOne({ id: item }, { tags: 1 }),
         tags = selectedItem.tags
+    console.log(tags);
     if (tags) {
-        var recItemIds = await getRecomendItems(tags)
-        var items = await Item.find({ id: { $in: recItemIds } })
-        res.json({ status: true, items })
+        var recItemIds = await getRecomendItems(tags, data.item)
+        var items = []
+        recItemIds.map(async (each, index) => {
+            var item = await Item.findOne({ id: each })
+            items.push(item)
+            if (index === recItemIds.length - 1) {
+                res.json({ status: true, items: items.sort((a, b) => { return b.off - a.off }) })
+            }
+        })
+
     }
 
 
