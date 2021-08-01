@@ -56,10 +56,11 @@ router.post('/view', async (req, res) => {
 
         favorite = false
     if (userId) {
-        user = await User.findById(userId, { favorit: 1 })
+        var user = await User.findById(userId, { favorit: 1 })
         if (user.favorit.includes(id)) {
             favorite = true
         }
+
     }
     {
         fastView ?
@@ -83,7 +84,6 @@ router.post('/recomandation', async (req, res) => {
     const { item } = data
     var selectedItem = await Item.findOne({ id: item }, { tags: 1 }),
         tags = selectedItem.tags
-    console.log(tags);
     if (tags) {
         var recItemIds = await getRecomendItems(tags, data.item)
         var items = []
