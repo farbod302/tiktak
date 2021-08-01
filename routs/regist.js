@@ -56,8 +56,8 @@ router.post('/sign_up', async (req, res) => {
         identity
     }
     { introduser ? newUser['introduser'] = introduser : null }
-    await new User(newUser).save().then(() => {
-        res.json({ status: true })
+    await new User(newUser).save().then((result) => {
+        res.json({ status: true, userId:result._id })
     }).catch(() => { res.json({ status: false }) })
 })
 

@@ -21,7 +21,6 @@ router.post('/add_to_cart', async (req, res) => {
 
 
     const { id, item, price } = data
-    console.log(data);
     await User.findByIdAndUpdate(id, { $push: { "cart.items": item }, $inc: { "cart.total": price * item.amount } })
     res.json(true)
 })
@@ -41,6 +40,42 @@ router.post('/contain_of', async (req, res) => {
     res.json(false)
 
 
+})
+
+
+router.post("/get_cart", async (req, res) => {
+    const data = getBody(req.body)
+    const { id } = data
+    var user = await User.findById(id, { cart: 1 })
+    if (!user) {
+        res.json({ status: false })
+    }
+    var cart = user.cart
+
+    res.json({ status: true, cart })
+})
+
+router.post("/remove_from_cart", (req, res) => {
+    const data = getBody(req.body)
+    const { id, itemId, price, amount } = data
+    User.findById(id).then(result => {
+        var cart = { ...result.cart },
+            newItems = cart.items.filter(each => each.id !== itemId),
+            newPrice = cart.total - (price * amount),
+            newCart = {
+                items: newItems,
+                total: newPrice
+            }
+        User.findByIdAndUpdate(id, { $set: { cart: newCart } }).then(result => {
+            if (result) {
+                res.json({ status: true })
+                return
+            }
+            res.json({ status: false })
+            return
+        })
+
+    })
 })
 
 router.post('/create_pay', async (req, res) => {
@@ -185,6 +220,30 @@ router.post('/get_user_from_phone', async (req, res) => {
     else {
         res.json({ name: `${user.identity.name} ${user.identity.lastName}` })
     }
+})
+
+
+router.post('/add_to_favorite', (req, res) => {
+    const data = getBody(req.body),
+        { item, user, op } = data
+
+    if (op) {
+        User.findByIdAndUpdate(user, { $push: { favorit: item } }).then(() => {
+            res.json({ status: true })
+            return
+        }).catch(() => {
+            res.json({ status: false })
+        })
+    }
+    else {
+        User.findByIdAndUpdate(user, { $pull: { favorit: item } }).then(() => {
+            res.json({ status: true })
+            return
+        }).catch(() => {
+            res.json({ status: false })
+        })
+    }
+
 })
 
 

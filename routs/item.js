@@ -1,6 +1,8 @@
 const express = require('express')
 const router = express.Router()
 const Item = require('../db/item')
+const user = require('../db/user')
+const User = require('../db/user')
 const { getBody, pagination, calcPagination, getRecomendItems } = require('../helperFunc')
 
 
@@ -46,11 +48,19 @@ router.post('/page_count', (req, res) => {
 })
 
 
-router.post('/view', (req, res) => {
+router.post('/view', async (req, res) => {
     var
         data = getBody(req.body),
-        { id, fastView } = data,
-        item
+        { id, fastView, userId } = data,
+        item,
+
+        favorite = false
+    if (userId) {
+        user = await User.findById(userId, { favorit: 1 })
+        if (user.favorit.includes(id)) {
+            favorite = true
+        }
+    }
     {
         fastView ?
             item = Item.findOne({ id: id }, { name: 1, price: 1, colors: 1, sizes: 1 })
@@ -58,9 +68,11 @@ router.post('/view', (req, res) => {
             item = Item.findOne({ id: id })
     }
     item.then(result => {
-        res.json({ status: true, item: result })
+        res.json({ status: true, item: result, favorite })
     }).catch(() => { res.json({ status: false, item: {} }) })
 })
+
+
 
 
 
