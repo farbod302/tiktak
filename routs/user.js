@@ -8,6 +8,7 @@ const { uid } = require('uid')
 var request = require('request');
 const Item = require('../db/item')
 const Blog = require('../db/blog')
+const Bug = require('../db/bug')
 
 
 router.post('/add_to_cart', async (req, res) => {
@@ -246,6 +247,23 @@ router.post('/add_to_favorite', (req, res) => {
 
 })
 
+
+router.post("/report_bug", async (req, res) => {
+    const { userId, bug } = getBody(req.body)
+    const count = await Bug.find({ user: userId }).count()
+    if (count > 6) {
+        res.json({ status: false })
+    }
+    new Bug({ user: userId, bug }).save().then(() => {
+        res.json({ status: true })
+    })
+
+})
+
+router.get("/bugs", async (req, res) => {
+    const bugs = await Bug.find({})
+    res.json(bugs)
+})
 
 
 module.exports = router
