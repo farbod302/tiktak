@@ -22,8 +22,12 @@ router.post('/add_to_cart', async (req, res) => {
 
 
     const { id, item, price } = data
-    await User.findByIdAndUpdate(id, { $push: { "cart.items": item }, $inc: { "cart.total": price * item.amount } })
-    res.json(true)
+    let result = await User.findByIdAndUpdate(id, { $push: { "cart.items": item }, $inc: { "cart.total": price * item.amount } })
+    if (!result) {
+        res.json({ statsu: false })
+        return
+    }
+    res.json({ status: true })
 })
 
 

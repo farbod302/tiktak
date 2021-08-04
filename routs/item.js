@@ -27,7 +27,6 @@ router.post('/category_items', (req, res) => {
     else {
         items.then(result => {
             res.json({ status: true, items: pagination(perPage, pageIndex, result) })
-                .catch(() => { res.json({ status: false, items: [] }) })
         })
     }
 })
@@ -64,7 +63,7 @@ router.post('/view', async (req, res) => {
     }
     {
         fastView ?
-            item = Item.findOne({ id: id }, { name: 1, price: 1, colors: 1, sizes: 1 })
+            item = Item.findOne({ id: id }, { name: 1, price: 1, colors: 1, sizes: 1, imgs: 1 })
             :
             item = Item.findOne({ id: id })
     }
@@ -86,14 +85,11 @@ router.post('/recomandation', async (req, res) => {
         tags = selectedItem.tags
     if (tags) {
         var recItemIds = await getRecomendItems(tags, data.item)
-        var items = []
-        recItemIds.map(async (each, index) => {
-            var item = await Item.findOne({ id: each })
-            items.push(item)
-            if (index === recItemIds.length - 1) {
-                res.json({ status: true, items: items.sort((a, b) => { return b.off - a.off }) })
-            }
-        })
+        var items = await Item.find({ id: { $in: recItemIds, $ne: data.item } })
+        console.log(items.length);
+        res.json({ status: true, items: items.sort((a, b) => { return b.off - a.off }) })
+
+
 
     }
 
