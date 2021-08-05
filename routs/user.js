@@ -271,4 +271,14 @@ router.get("/bugs", async (req, res) => {
 })
 
 
+
+router.post("/get_user_pays", (req, res) => {
+    const data = getBody(req.body),
+        { userId } = data
+    Shop.find({ user: userId, depo: true }).then(result => {
+        res.json(result)
+    })
+
+})
+
 module.exports = router

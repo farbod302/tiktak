@@ -1,7 +1,6 @@
 const express = require('express')
 const router = express.Router()
 const Item = require('../db/item')
-const user = require('../db/user')
 const User = require('../db/user')
 const { getBody, pagination, calcPagination, getRecomendItems } = require('../helperFunc')
 
@@ -30,7 +29,7 @@ router.post('/category_items', async (req, res) => {
     }
     var items = await Item.find(
         query,
-        { name: 1, price: 1, off: 1, mainImg: 1, imgs: 1, status: 1 }
+        { name: 1, price: 1, off: 1, mainImg: 1, imgs: 1, status: 1, id: 1 }
     )
     if (pageIndex && perPage) {
         items = pagination(perPage, pageIndex, items)
