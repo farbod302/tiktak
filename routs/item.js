@@ -20,10 +20,10 @@ router.post('/category_items', async (req, res) => {
         mainCategory: mainCategory,
         depo: true
     }
-    if (seconderyCategory && seconderyCategory !== 0) {
+    if (seconderyCategory && seconderyCategory != 0) {
         query["secondaryCategory"] = seconderyCategory
     }
-    if (mainCategory === 6) {
+    if (mainCategory == 6) {
         query = {
             off: { $gt: 0 }
         }
