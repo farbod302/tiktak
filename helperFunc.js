@@ -195,7 +195,9 @@ const addScoreToIntroduser = (userId) => {
   return new Promise(async resolve => {
     const user = await User.findById(userId),
       introduserId = user.introduser
-    if (!introduserId) resolve()
+    if (!introduserId) {
+      resolve()
+    } 
     var introduser = await User.findById(introduserId),
       score = introduser.score
     if (score.includes(userId)) resolve()

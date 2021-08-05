@@ -13,22 +13,32 @@ router.get('/all_items', (req, res) => {
 })
 
 //برگرداندن ایتم های یک کتگوری خاص مثلا کفش مجلسی به تعداد مشخص
-router.post('/category_items', (req, res) => {
+router.post('/category_items', async (req, res) => {
     const data = getBody(req.body)
     const { mainCategory, seconderyCategory, pageIndex, perPage } = data
-    var items = Item.find(
-        { mainCategory: mainCategory, seconderyCategory: seconderyCategory, depo: true },
-        { name: 1, price: 1, off: 1, mainImg: 1, }
+    let query = {
+        mainCategory: mainCategory,
+        depo: true
+    }
+    if (seconderyCategory && seconderyCategory !== 0) {
+        query["secondaryCategory"] = seconderyCategory
+    }
+    if (mainCategory === 6) {
+        query = {
+            off: { $gt: 0 }
+        }
+    }
+    var items = await Item.find(
+        query,
+        { name: 1, price: 1, off: 1, mainImg: 1, imgs: 1, status: 1 }
     )
-    if (!pageIndex && pageIndex <= 0) {
-        items.then(result => res.json({ status: true, items: result }))
-            .catch(() => { res.json({ status: false, items: [] }) })
+    if (pageIndex && perPage) {
+        items = pagination(perPage, pageIndex, items)
+        res.json(items)
+        return
     }
-    else {
-        items.then(result => {
-            res.json({ status: true, items: pagination(perPage, pageIndex, result) })
-        })
-    }
+    res.json(items)
+
 })
 
 router.post('/page_count', (req, res) => {
@@ -86,7 +96,6 @@ router.post('/recomandation', async (req, res) => {
     if (tags) {
         var recItemIds = await getRecomendItems(tags, data.item)
         var items = await Item.find({ id: { $in: recItemIds, $ne: data.item } })
-        console.log(items.length);
         res.json({ status: true, items: items.sort((a, b) => { return b.off - a.off }) })
 
 

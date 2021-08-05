@@ -22,7 +22,7 @@ router.post('/add_to_cart', async (req, res) => {
 
 
     const { id, item, price } = data
-    let result = await User.findByIdAndUpdate(id, { $push: { "cart.items": item }, $inc: { "cart.total": price * item.amount } })
+    let result = await User.findByIdAndUpdate(id, { $push: { "cart.items": item }, $inc: { "cart.total": Number(price) * item.amount } })
     if (!result) {
         res.json({ statsu: false })
         return
@@ -121,7 +121,7 @@ router.post('/create_pay', async (req, res) => {
             orderId,
             shopId,
             items,
-            price,
+            amount: price,
             date: Date.now()
         }
         { off ? newShop["off"] = off : null }
@@ -167,12 +167,13 @@ router.post('/pay_res', async (req, res) => {
                 return
             }
             if (body.track_id && body.status === 100) {
-                await Shop.findOneAndUpdate({ orderId: order_id }, { $set: { use: true, status: 1, trackId: body.track_id } })
+                await Shop.findOneAndUpdate({ orderId: order_id }, { $set: { used: true, status: 1, trackId: body.track_id } })
                 if (off) {
                     await Off.findOneAndUpdate({ code: off }, { $set: { use: true } })
                 }
                 Item.updateMany({ id: { $in: itemIds } }, { "status.sell": { $push: user } })
                 await addScoreToIntroduser(user)
+                await User.findByIdAndUpdate(user, { $set: { cart: [] } })
                 res.redirect(`${backUrl}/pay_result?status=true&id=${body.track_id}`)
             }
         })
