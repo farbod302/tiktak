@@ -3,7 +3,7 @@ const User = require('../db/user')
 const Shop = require('../db/shop')
 const Off = require('../db/off')
 const router = express.Router()
-const { getBody, api, addScoreToIntroduser } = require('../helperFunc')
+const { getBody, api, addScoreToIntroduser, calcOff } = require('../helperFunc')
 const { uid } = require('uid')
 var request = require('request');
 const Item = require('../db/item')
@@ -20,11 +20,18 @@ router.post('/add_to_cart', async (req, res) => {
     //     amount : "تعداد"
     // }
 
+    const { id, item } = data
+    let { cart } = await User.findById(id, { cart: 1 })
+    let exist = []
+    await cart.forEach(each => exist.push(each.id))
+    if (exist.includes(item.id)) {
+        res.json({ status: false })
+        return
+    }
 
-    const { id, item, price } = data
-    let result = await User.findByIdAndUpdate(id, { $push: { "cart.items": item }, $inc: { "cart.total": Number(price) } })
+    let result = await User.findByIdAndUpdate(id, { $push: { cart: item } })
     if (!result) {
-        res.json({ statsu: false })
+        res.json({ status: false })
         return
     }
     res.json({ status: true })
@@ -51,29 +58,44 @@ router.post('/contain_of', async (req, res) => {
 router.post("/get_cart", async (req, res) => {
     const data = getBody(req.body)
     const { id } = data
-    var user = await User.findById(id, { cart: 1 })
-    if (!user) {
-        res.json({ status: false })
-    }
-    var cart = user.cart,
-        itemIds = []
-    await cart.items.forEach(each => itemIds.push(each.id))
-    let items = await Item.find({ id: { $in: itemIds } })
-    let finalList = []
-    await cart.items.forEach(each => {
-        finalList.push({
-            name: items.find(item => each.id === item.id).name,
-            price: items.find(item => each.id === item.id).price,
-            off: items.find(item => each.id === item.id).off,
-            color: each.color,
-            size: each.size,
-            amount: each.amount,
-            id: each.id
-        })
+
+    let itemList = []
+    let { cart } = await User.findById(id, { cart: 1 })
+    await cart.forEach(each => {
+        itemList.push(each.id)
     })
+
+    var itemsInCart = await Item.find({ id: { $in: itemList } })
+
+    var finalList = [],
+        total = 0,
+        notDepo = []
+
+    await itemsInCart.forEach(each => {
+        if (!each.depo) {
+            return notDepo.push(each.id)
+        }
+        finalList.push({
+            id: each.id,
+            img: `http://localhost:4545/item/${each.id}/1.jpg`,
+            amount: cart.find(item => item.id === each.id).amount,
+            color: cart.find(item => item.id === each.id).color,
+            size: cart.find(item => item.id === each.id).size,
+            price: each.price,
+            off: each.off,
+            name: each.name
+        })
+        let itemPrice = calcOff(each.price, each.off) * cart.find(item => item.id === each.id).amount
+        return total += itemPrice
+    })
+    if (notDepo.length !== 0) {
+
+        cart = await cart.filter(each => !each.id.includes(notDepo))
+        await User.findByIdAndUpdate(id, { $set: { cart: cart } })
+    }
     await res.json({
         items: finalList,
-        amount: cart.total
+        total
     })
 
 })

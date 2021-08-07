@@ -113,7 +113,6 @@ router.post('/edit_item_img', async (req, res) => {
 router.post('/create_off_code', async (req, res) => {
     const { user, amount, day } = req.body
     var selectedUser
-    console.log(req.body);
     { user ? selectedUser = user : selectedUser = "0" }
     var code = await createOffCode(selectedUser, amount, day)
     res.json({

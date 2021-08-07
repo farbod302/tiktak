@@ -300,7 +300,9 @@ const checkOrgin = (req, res, next) => {
   next()
 
 }
-
+const calcOff = (price, off) => {
+  return (price * (100 - off) / 100)
+}
 module.exports = {
   removeImgs,
   addScoreToIntroduser,
@@ -319,7 +321,8 @@ module.exports = {
   api,
   getMountAndYear,
   addBlogImg,
-  checkOrgin
+  checkOrgin,
+  calcOff
 }
 
 

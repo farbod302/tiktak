@@ -7,11 +7,8 @@ const user = mongoose.Schema({
     default: []
   },
   cart: {
-    type: Object,
-    default: {
-      items: [],
-      total: 0
-    }
+    type: Array,
+    default: []
   },
   addreses: {
     type: Array,
