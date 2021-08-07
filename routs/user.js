@@ -22,7 +22,7 @@ router.post('/add_to_cart', async (req, res) => {
 
 
     const { id, item, price } = data
-    let result = await User.findByIdAndUpdate(id, { $push: { "cart.items": item }, $inc: { "cart.total": Number(price)} })
+    let result = await User.findByIdAndUpdate(id, { $push: { "cart.items": item }, $inc: { "cart.total": Number(price) } })
     if (!result) {
         res.json({ statsu: false })
         return
@@ -64,10 +64,11 @@ router.post("/get_cart", async (req, res) => {
         finalList.push({
             name: items.find(item => each.id === item.id).name,
             price: items.find(item => each.id === item.id).price,
+            off: items.find(item => each.id === item.id).off,
             color: each.color,
             size: each.size,
             amount: each.amount,
-            id:each.id
+            id: each.id
         })
     })
     await res.json({

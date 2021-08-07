@@ -34,12 +34,14 @@ const admin = require('./routs/admin')
 const user = require('./routs/user')
 const view = require('./routs/view')
 const item = require('./routs/item')
+const comment = require('./routs/comment')
 
 app.use('/regist', regist)
 app.use('/admin', admin)
 app.use('/user', user)
 app.use('/view', view)
 app.use('/item', item)
+app.use('/comment', comment)
 
 birthdayFunc = async () => {
   var users = await checkBirthday()
