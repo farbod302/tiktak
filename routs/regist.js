@@ -2,14 +2,15 @@ const express = require('express')
 const router = express.Router()
 const User = require("../db/user")
 const TrezSmsClient = require("trez-sms-client");
-const { phoneValidator, getBody } = require('../helperFunc');
-const JDate = require('jalali-date');
+const { phoneValidator, getBody, checkOrgin } = require('../helperFunc');
+const jwt = require('jsonwebtoken');
+const encryptor = require('simple-encryptor')(process.env.ENCRYPT_KEY);
 
 const client = new TrezSmsClient("daaraan", process.env.SMS);
 
 router.post('/check', async (req, res) => {
     var data = getBody(req.body)
-    const { phone } = data
+    const { phone, web } = data
     var validPhone = phoneValidator(phone)
     if (!validPhone) {
         await res.json({
@@ -24,6 +25,14 @@ router.post('/check', async (req, res) => {
     await client.manualSendCode(validPhone, `کد تایید ورود به برنامه:${randomNum}`)
     var status
     { user ? status = true : status = false }
+    if (web) {
+        await res.json({
+            valid: true,
+            code: encryptor.encrypt(randomNum),
+            status
+        })
+        return
+    }
     await res.json({
         valid: true,
         code: randomNum,
@@ -40,16 +49,13 @@ router.post('/sign_up', async (req, res) => {
         res.json({ status: false })
         return
     }
-    const { day, month, year } = birthday
-    const jdate = new JDate(year, month, day)
+    const { day, month } = birthday
     var identity = {
         name, lastName, phone,
         birthday: {
-            year,
             month: Number(month),
             day: Number(day),
             birthday: `${Number(month)}/${Number(day)}`,
-            fullDate: jdate._d,
         },
     }
     var newUser = {
@@ -57,9 +63,12 @@ router.post('/sign_up', async (req, res) => {
     }
     { introduser ? newUser['introduser'] = introduser : null }
     await new User(newUser).save().then((result) => {
-        res.json({ status: true, userId:result._id })
+        res.json({ status: true, userId: result._id, phone })
     }).catch(() => { res.json({ status: false }) })
 })
+
+
+
 
 router.post('/log_in', async (req, res) => {
     const data = getBody(req.body)
@@ -74,7 +83,31 @@ router.post('/log_in', async (req, res) => {
     }
 })
 
+router.post('/log_in_web', checkOrgin, async (req, res) => {
+    const { phone } = req.body
+    let phoneNum = phoneValidator(phone)
+    if (!phoneNum) {
+        res.json({ status: false })
+        return
+    }
+    let user = await User.findOne({ "identity.phone": phoneNum })
+    if (!user) {
+        res.json({ status: false })
+        return
+    }
+    const { name, lastName, birthday } = user.identity,
+        token = jwt.sign({
+            id: user._id,
+            name,
+            lastName,
+            phone:phoneNum,
+            birthday
+        }, process.env.JWT);
 
+    res.json(token)
+})
 
 
 module.exports = router
+
+

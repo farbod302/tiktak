@@ -197,7 +197,7 @@ const addScoreToIntroduser = (userId) => {
       introduserId = user.introduser
     if (!introduserId) {
       resolve()
-    } 
+    }
     var introduser = await User.findById(introduserId),
       score = introduser.score
     if (score.includes(userId)) resolve()
@@ -288,6 +288,19 @@ const getMountAndYear = (date) => {
 
 const api = 'http://localhost:4545'
 
+
+
+
+const checkOrgin = (req, res, next) => {
+  let origin = req.get('origin');
+  if (origin != 'http://localhost:3000') {
+    res.json({ status: "orgin error" })
+    return
+  }
+  next()
+
+}
+
 module.exports = {
   removeImgs,
   addScoreToIntroduser,
@@ -305,7 +318,8 @@ module.exports = {
   mountGenerator,
   api,
   getMountAndYear,
-  addBlogImg
+  addBlogImg,
+  checkOrgin
 }
 
 

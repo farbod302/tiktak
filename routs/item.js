@@ -24,7 +24,7 @@ router.post('/category_items', async (req, res) => {
     }
     if (mainCategory == 6) {
         query = {
-            off: { $gt: 0 }
+            off: { $gt: 0 }, depo: true
         }
     }
     var items = await Item.find(

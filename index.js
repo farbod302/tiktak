@@ -6,6 +6,7 @@ require('dotenv').config()
 const app = express()
 app.use(cors())
 
+
 app.use("/item", express.static('item'))
 app.use("/blog", express.static('blog'))
 app.use("/slider", express.static('sliders'))

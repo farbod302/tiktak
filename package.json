@@ -19,6 +19,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.13.2",
     "request": "^2.88.2",
+    "simple-encryptor": "^4.0.0",
     "trez-sms-client": "^1.0.4",
     "uid": "^2.0.0"
   }

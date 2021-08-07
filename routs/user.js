@@ -22,7 +22,7 @@ router.post('/add_to_cart', async (req, res) => {
 
 
     const { id, item, price } = data
-    let result = await User.findByIdAndUpdate(id, { $push: { "cart.items": item }, $inc: { "cart.total": Number(price) * item.amount } })
+    let result = await User.findByIdAndUpdate(id, { $push: { "cart.items": item }, $inc: { "cart.total": Number(price)} })
     if (!result) {
         res.json({ statsu: false })
         return
@@ -55,15 +55,36 @@ router.post("/get_cart", async (req, res) => {
     if (!user) {
         res.json({ status: false })
     }
-    var cart = user.cart
+    var cart = user.cart,
+        itemIds = []
+    await cart.items.forEach(each => itemIds.push(each.id))
+    let items = await Item.find({ id: { $in: itemIds } })
+    let finalList = []
+    await cart.items.forEach(each => {
+        finalList.push({
+            name: items.find(item => each.id === item.id).name,
+            price: items.find(item => each.id === item.id).price,
+            color: each.color,
+            size: each.size,
+            amount: each.amount,
+            id:each.id
+        })
+    })
+    await res.json({
+        items: finalList,
+        amount: cart.total
+    })
 
-    res.json({ status: true, cart })
 })
 
 router.post("/remove_from_cart", (req, res) => {
     const data = getBody(req.body)
     const { id, itemId, price, amount } = data
     User.findById(id).then(result => {
+        if (!result) {
+            res.json({ status: false })
+            return
+        }
         var cart = { ...result.cart },
             newItems = cart.items.filter(each => each.id !== itemId),
             newPrice = cart.total - (price * amount),
@@ -211,6 +232,11 @@ router.get('/blogs', (req, res) => {
 router.post('/add_new_addres', async (req, res) => {
     const data = getBody(req.body)
     const { user, address } = data
+    let sUser = await User.findById(user)
+    if (sUser.addreses.length === 5) {
+        res.json({ status: false })
+        return
+    }
     await User.findByIdAndUpdate(user, { $push: { addreses: address } })
     res.json({ statsu: true })
 
@@ -275,7 +301,7 @@ router.get("/bugs", async (req, res) => {
 router.post("/get_user_pays", (req, res) => {
     const data = getBody(req.body),
         { userId } = data
-    Shop.find({ user: userId, depo: true }).then(result => {
+    Shop.find({ user: userId, status: { $gt: 0 } }).then(result => {
         res.json(result)
     })
 
