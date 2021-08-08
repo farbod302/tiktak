@@ -38,13 +38,13 @@ router.post('/add_to_cart', async (req, res) => {
 })
 
 
-router.post('/contain_of', async (req, res) => {
+router.post('/contain_off', async (req, res) => {
     var itemIds = []
     const data = getBody(req.body),
         { id } = data,
         user = await User.findById(id, { cart: 1 })
-    user.cart.items.map(each => itemsIds.push(each.id))
-    var off = await Item.find({ id: { $inc: itemIds }, containOff: true })
+    user.cart.map(each => itemIds.push(each.id))
+    var off = await Item.find({ id: { $in: itemIds }, containOff: true })
     if (off.length > 0) {
         res.json(true)
         return
@@ -102,20 +102,15 @@ router.post("/get_cart", async (req, res) => {
 
 router.post("/remove_from_cart", (req, res) => {
     const data = getBody(req.body)
-    const { id, itemId, price, amount } = data
+    const { id, itemId } = data
     User.findById(id).then(result => {
         if (!result) {
             res.json({ status: false })
             return
         }
-        var cart = { ...result.cart },
-            newItems = cart.items.filter(each => each.id !== itemId),
-            newPrice = cart.total - (price * amount),
-            newCart = {
-                items: newItems,
-                total: newPrice
-            }
-        User.findByIdAndUpdate(id, { $set: { cart: newCart } }).then(result => {
+        var cart = [...result.cart],
+            newItems = cart.filter(each => each.id !== itemId)
+        User.findByIdAndUpdate(id, { $set: { cart: newItems } }).then(result => {
             if (result) {
                 res.json({ status: true })
                 return
@@ -129,7 +124,7 @@ router.post("/remove_from_cart", (req, res) => {
 
 router.post('/create_pay', async (req, res) => {
     const data = getBody(req.body)
-    const { id, off, price } = data
+    const { id, off, price, pay } = data
     var user = await User.findById(id, { cart: 1, identity: 1 })
     var items = user.cart.items,
         phone = user.identity['phone'],
@@ -166,6 +161,7 @@ router.post('/create_pay', async (req, res) => {
             shopId,
             items,
             amount: price,
+            total: pay,
             date: Date.now()
         }
         { off ? newShop["off"] = off : null }
@@ -230,6 +226,7 @@ router.post('/validate_off', async (req, res) => {
     const data = getBody(req.body)
     const { code, user } = data
     var off = await Off.findOne({ code: code })
+    console.log(off);
     if (!off || off.user !== user || off.dep < Date.now()) {
         res.json({ status: false, amount: 0 })
         return

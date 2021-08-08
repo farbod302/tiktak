@@ -6,6 +6,7 @@ const shop = mongoose.Schema({
     items: Array,
     amount: Number,
     off: String,
+    total: Number,
     used: {
         type: Boolean,
         default: false

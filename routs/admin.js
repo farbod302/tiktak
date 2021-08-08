@@ -1,11 +1,12 @@
 const express = require('express')
 const router = express.Router()
 const { uid } = require('uid')
-const { addImgs, multItems, removeImgs, createOffCode, addBlogImg, api } = require('../helperFunc')
+const { addImgs, multItems, removeImgs, createOffCode, addBlogImg, api, phoneValidator } = require('../helperFunc')
 const Item = require('../db/item')
 const User = require('../db/user')
 const Shop = require('../db/shop')
 const Blog = require('../db/blog')
+const View = require('../db/view')
 const TrezSmsClient = require("trez-sms-client");
 const Off = require('../db/off')
 const client = new TrezSmsClient("daaraan", "81912601320");
@@ -111,10 +112,22 @@ router.post('/edit_item_img', async (req, res) => {
 
 
 router.post('/create_off_code', async (req, res) => {
-    const { user, amount, day } = req.body
+    const { user, amount, day, sendSms } = req.body
+    console.log(req.body);
     var selectedUser
     { user ? selectedUser = user : selectedUser = "0" }
     var code = await createOffCode(selectedUser, amount, day)
+    console.log(phoneValidator(user), sendSms);
+    if (phoneValidator(user) !== false && sendSms === true) {
+        let msg =
+            `مشتری عزیز کد تخفیف ${amount} تومانی خرید از اپ و وب سایت تیک تاک برای شما ایجاد شد
+کدتخفیف شما:
+${code.code}
+مهلت استفاده ${day} روز
+tiktakstyle.ir
+`
+        await client.manualSendCode(user, msg)
+    }
     res.json({
         status: true,
         code: code.code,
@@ -227,6 +240,57 @@ router.post('/delete_blog', (req, res) => {
 
         res.json(true)
     })
+})
+
+
+router.get('/summery', async (req, res) => {
+    let oneMounth = 2592000000,
+        shops = await Shop.find({ status: { $gt: 0 } }),
+        views = await View.find({}),
+        items = await Item.find({}),
+        user = await User.find({}).count(),
+        result = {
+            view: {
+                allView: 0,
+                allUser: user,
+                last30View: 0
+            },
+            sell: {
+                sellAmount: shops.length,
+                sellPrice: 0,
+                todaySell: 0,
+            },
+            items: {
+                allItems: items.length,
+                depoItems: items.filter(each => each.depo === true).length,
+                notDepoItems: items.filter(each => each.depo === false).length,
+            }
+
+        }
+    let all = 0
+    await views.forEach(each => all += each.view)
+    result.view["allView"] = all
+    all = 0
+    let now = Date.now(),
+        lastMonth = now - oneMounth,
+        lastDay = now - (1000 * 60 * 60 * 24)
+    views = views.filter(each => each.date > lastMonth)
+    await views.forEach(each => all += each.view)
+    result.view["last30View"] = all
+    all = 0
+    await shops.forEach(each => all += each.amount)
+    result.sell["sellPrice"] = all
+    all = 0
+    shops = shops.filter(each => each.date > lastDay)
+    await shops.forEach(each => all += each.amount)
+    result.sell["todaySell"] = all
+
+    await res.json(result)
+
+
+
+
+
 })
 
 

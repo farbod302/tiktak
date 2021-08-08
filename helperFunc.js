@@ -194,31 +194,38 @@ const createOffCode = (user, amount, day) => {
 const addScoreToIntroduser = (userId) => {
   return new Promise(async resolve => {
     const user = await User.findById(userId),
-      introduserId = user.introduser
-    if (!introduserId) {
-      resolve()
+      introduserPhone = user.introduser,
+      introduserId = await User.findOne({ "identity.phone": introduserPhone })
+    _id = introduserId._id
+    if (!_id) {
+      return resolve()
     }
-    var introduser = await User.findById(introduserId),
+    var introduser = await User.findById(_id),
       score = introduser.score
-    if (score.includes(userId)) resolve()
-    await User.findByIdAndUpdate(introduserId, { $push: { score: userId } })
+    console.log(score);
+    if (score.includes(userId)) {
+      return resolve()
+    }
+    await User.findByIdAndUpdate(_id, { $push: { score: userId } })
     var length = score.length + 1
-    if (Math.floor(length / 4) <= introduser.scoreUsed) resolve()
-
-    var code = await createOffCode(introduserId, 20000, 7)
-    await User.findByIdAndUpdate(introduserId, { $inc: { scoreUsed: 1 } })
+    if (Math.floor(length / 4) <= introduser.scoreUsed) {
+      return resolve()
+    }
+    console.log(introduser.identity.phone);
+    var code = await createOffCode(introduser.identity.phone, 20000, 7)
+    await User.findByIdAndUpdate(_id, { $inc: { scoreUsed: 1 } })
     var introduserName = `${introduser.identity.name} ${introduser.identity.lastName}`,
       phone = introduser.identity.phone,
       msg =
         `${introduserName} عزیز
 کد تخفیف ۲۰,۰۰۰ هزار تومانی شما بابت معرفی دوستان به فروشگاه تیک تاک ایجاد شد:
 کد تخفیف:
-${code}
+${code.code}
 این کد تخفیف تا یک هفته در وبسایت و اپلیکیشن تیک تاک قابل استفاده است
 ممنون از حسن نیت شما
 `
     await client.manualSendCode(phone, msg)
-    resolve()
+    return resolve()
   })
 }
 

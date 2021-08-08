@@ -72,7 +72,7 @@ router.post('/view', async (req, res) => {
     }
     {
         fastView ?
-            item = Item.findOne({ id: id }, { name: 1, price: 1, colors: 1, sizes: 1, imgs: 1 })
+            item = Item.findOne({ id: id }, { name: 1, price: 1, colors: 1, sizes: 1, imgs: 1, off: 1 })
             :
             item = Item.findOne({ id: id })
     }
