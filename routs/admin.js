@@ -199,14 +199,32 @@ router.post('/item_search', async (req, res) => {
 router.post("/get_pays", async (req, res) => {
     const { status } = req.body
     var pays
-    if (status) {
-        pays = await Shop.find({ status: status }, { items: 1, user: 1, status: 1, amount: 1, orderType: 1, date: 1, trackId: 1 })
+    if (status !== null) {
+        pays = await Shop.find({ status: status })
     }
     else {
-        pays = await Shop.find({}, { items: 1, user: 1, status: 1, amount: 1, orderType: 1, date: 1, trackId: 1 })
+        pays = await Shop.find({})
 
     }
-    res.json(pays)
+    let result = []
+    if (pays.length === 0) {
+        await res.json(result)
+
+    }
+    pays=pays.reverse()
+    await pays.forEach(async (each, index) => {
+        let user = await User.findById(each.user)
+        await result.push({
+            name: `${user.identity.name} ${user.identity.lastName}`,
+            phone: user.identity["phone"],
+            shop: each
+
+        })
+        if (index + 1 === pays.length) {
+
+            await res.json(result)
+        }
+    })
 })
 
 
@@ -215,7 +233,12 @@ router.get('/off_list', async (req, res) => {
     res.json(offs)
 })
 
-
+router.post('/chang_shop_status', (req, res) => {
+    const { id } = req.body
+    Shop.findByIdAndUpdate(id, { $set: { status: 2 } }).then(result => {
+        res.json(true)
+    })
+})
 
 router.post('/add_blog', async (req, res) => {
 

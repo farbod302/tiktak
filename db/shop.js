@@ -7,6 +7,7 @@ const shop = mongoose.Schema({
     amount: Number,
     off: String,
     total: Number,
+    addres: String,
     used: {
         type: Boolean,
         default: false

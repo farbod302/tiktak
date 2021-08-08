@@ -7,7 +7,7 @@ const { getBody, pagination, calcPagination, getRecomendItems } = require('../he
 
 
 router.get('/all_items', (req, res) => {
-    var allItems = Item.find({ depo: true }, { info: 0, tags: 0, containOff: 0, depo: 0 })
+    var allItems = Item.find({ depo: true }, { tags: 0, containOff: 0, depo: 0 })
     allItems.then(result => { res.json({ status: true, items: result }) })
 })
 

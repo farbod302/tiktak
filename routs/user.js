@@ -124,9 +124,9 @@ router.post("/remove_from_cart", (req, res) => {
 
 router.post('/create_pay', async (req, res) => {
     const data = getBody(req.body)
-    const { id, off, price, pay } = data
+    const { id, off, price, pay, addres } = data
     var user = await User.findById(id, { cart: 1, identity: 1 })
-    var items = user.cart.items,
+    var items = user.cart,
         phone = user.identity['phone'],
         orderId = uid(6)
 
@@ -162,7 +162,7 @@ router.post('/create_pay', async (req, res) => {
             items,
             amount: price,
             total: pay,
-            date: Date.now()
+            date: Date.now(), addres
         }
         { off ? newShop["off"] = off : null }
         await new Shop(newShop).save()
@@ -181,7 +181,7 @@ router.post('/pay_res', async (req, res) => {
     const user = pay.user
     var off = pay.off
     var itemIds = []
-    pay.items.map(each => itemIds.push(each.id))
+    await pay.items.map(each => itemIds.push(each.id))
     if (pay.use === true || status !== "10") {
         await Shop.findOneAndUpdate({ orderId: order_id }, { $set: { use: true } })
         res.redirect(`${backUrl}/pay_result?status=false&id=0`)
@@ -211,7 +211,8 @@ router.post('/pay_res', async (req, res) => {
                 if (off) {
                     await Off.findOneAndUpdate({ code: off }, { $set: { use: true } })
                 }
-                Item.updateMany({ id: { $in: itemIds } }, { "status.sell": { $push: user } })
+                console.log(itemIds);
+                await Item.updateMany({ id: { $in: itemIds } }, { $push: { "status.sell": user } })
                 await addScoreToIntroduser(user)
                 await User.findByIdAndUpdate(user, { $set: { cart: [] } })
                 res.redirect(`${backUrl}/pay_result?status=true&id=${body.track_id}`)
@@ -227,7 +228,7 @@ router.post('/validate_off', async (req, res) => {
     const { code, user } = data
     var off = await Off.findOne({ code: code })
     console.log(off);
-    if (!off || off.user !== user || off.dep < Date.now()) {
+    if (!off || off.user !== user || off.dep < Date.now() || off.use === true) {
         res.json({ status: false, amount: 0 })
         return
     }
