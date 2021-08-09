@@ -2,10 +2,6 @@ const mongoose = require('mongoose')
 
 const user = mongoose.Schema({
   identity: Object,
-  pays: {
-    type: Array,
-    default: []
-  },
   cart: {
     type: Array,
     default: []
