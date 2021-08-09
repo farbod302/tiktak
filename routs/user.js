@@ -60,7 +60,9 @@ router.post("/get_cart", async (req, res) => {
     const { id } = data
 
     let itemList = []
-    let { cart } = await User.findById(id, { cart: 1 })
+    let user = await User.findById(id, { cart: 1 }),
+        { cart } = user
+
     if (!cart) {
         res.json({ status: false })
         return
