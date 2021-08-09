@@ -61,9 +61,13 @@ router.post("/get_cart", async (req, res) => {
 
     let itemList = []
     let user = await User.findById(id, { cart: 1 })
-    
+
     if (!user) {
-        res.json({ status: false })
+        res.json({
+            items: [],
+            total: 0,
+            status: false
+        })
         return
     }
     let cart = user.cart
@@ -101,7 +105,8 @@ router.post("/get_cart", async (req, res) => {
     }
     await res.json({
         items: finalList,
-        total
+        total,
+        status: true
     })
 
 })
