@@ -2,7 +2,8 @@ const mongoose = require('mongoose')
 const blog = mongoose.Schema({
     id: String,
     title: String,
-    text: String
+    text: String,
+    date: Number
 
 })
 

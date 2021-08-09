@@ -84,6 +84,10 @@ const secondaryCategory = [
       {
         id: 3,
         label: 'کوله'
+      },
+      {
+        id: 4,
+        label: 'بوت'
       }
     ]
   },

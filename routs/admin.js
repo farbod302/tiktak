@@ -211,7 +211,7 @@ router.post("/get_pays", async (req, res) => {
         await res.json(result)
 
     }
-    pays=pays.reverse()
+    pays = pays.reverse()
     await pays.forEach(async (each, index) => {
         let user = await User.findById(each.user)
         await result.push({
@@ -248,7 +248,8 @@ router.post('/add_blog', async (req, res) => {
     const newBlog = {
         id,
         title,
-        text
+        text,
+        date: Date.now()
     }
     await addBlogImg(img, id)
 
