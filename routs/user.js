@@ -87,7 +87,7 @@ router.post("/get_cart", async (req, res) => {
         }
         finalList.push({
             id: each.id,
-            img: `http://localhost:4545/item/${each.id}/1.jpg`,
+            img: `https://daaraanedu.ir:4545/item/${each.id}/1.jpg`,
             amount: cart.find(item => item.id === each.id).amount,
             color: cart.find(item => item.id === each.id).color,
             size: cart.find(item => item.id === each.id).size,
@@ -187,7 +187,7 @@ router.post('/create_pay', async (req, res) => {
 
 router.post('/pay_res', async (req, res) => {
     const { status, order_id, id } = req.body
-    const backUrl = "https://tiktakstyle.ir/#/payres"
+    const backUrl = "https://tiktakstyle.ir/#/pey_result"
     const pay = await Shop.findOne({ orderId: order_id })
     const user = pay.user
     var off = pay.off
@@ -195,7 +195,7 @@ router.post('/pay_res', async (req, res) => {
     await pay.items.map(each => itemIds.push(each.id))
     if (pay.use === true || status !== "10") {
         await Shop.findOneAndUpdate({ orderId: order_id }, { $set: { use: true } })
-        res.redirect(`${backUrl}/pay_result?status=false&id=0`)
+        res.redirect(`${backUrl}/pay_result?status=false&code=0`)
     }
     else {
         var options = {
@@ -214,7 +214,7 @@ router.post('/pay_res', async (req, res) => {
         };
         await request(options, async function (error, response, body) {
             if (error) {
-                res.redirect(`${backUrl}/pay_result?status=false&id=0`)
+                res.redirect(`${backUrl}/pay_result?status=false&code=0`)
                 return
             }
             if (body.track_id && body.status === 100) {
@@ -226,7 +226,7 @@ router.post('/pay_res', async (req, res) => {
                 await Item.updateMany({ id: { $in: itemIds } }, { $push: { "status.sell": user } })
                 await addScoreToIntroduser(user)
                 await User.findByIdAndUpdate(user, { $set: { cart: [] } })
-                res.redirect(`${backUrl}/pay_result?status=true&id=${body.track_id}`)
+                res.redirect(`${backUrl}/pay_result?status=true&code=${body.track_id}`)
             }
         })
     }
@@ -264,6 +264,11 @@ router.get('/blogs', (req, res) => {
 router.post('/add_new_addres', async (req, res) => {
     const data = getBody(req.body)
     const { user, address } = data
+
+    // addres={
+    //     addres:"متن آدرس",
+    //     postCode:"کد پستی استرینگ"
+    // }
     let sUser = await User.findById(user)
     if (sUser.addreses.length === 5) {
         res.json({ status: false })

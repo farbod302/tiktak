@@ -2,6 +2,9 @@ const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
 const bodyParser = require('body-parser')
+const TrezSmsClient = require("trez-sms-client");
+const client = new TrezSmsClient("daaraan", "81912601320");
+
 require('dotenv').config()
 const app = express()
 app.use(cors())
@@ -14,7 +17,7 @@ app.use(bodyParser.json({ limit: '7mb' }));
 app.use(bodyParser.urlencoded({ limit: '7mb', extended: true }));
 
 
-const { checkBirthday } = require('./helperFunc')
+const { checkBirthday, createOffCode } = require('./helperFunc')
 
 var port = process.env.PORT
 app.listen(port, console.log(`Server Start On Port ${port}`))
@@ -45,5 +48,25 @@ app.use('/comment', comment)
 
 birthdayFunc = async () => {
   var users = await checkBirthday()
-  //do stuf with users
+
+  users.map(async (each, index) => {
+    let { phone } = each.identity,
+      code = await createOffCode(phone, 20000, 5),
+      msg = `
+زادروزتان مبارک
+کد تخفیف ۲۰,۰۰۰ تومانی خرید از سایت و اپیکیشن تیک تاک برای شما ایجاد شد
+کد تخفیف:
+${code.code}
+مهلت استفاده:۵ روز
+tiktakstyle.ir
+`
+    setTimeout(async () => {
+      await client.manualSendCode(phone, msg)
+    }, index * 1000);
+
+  })
 }
+
+setInterval(() => {
+  birthdayFunc()
+}, 1000 * 60 * 60 * 25)
