@@ -173,7 +173,8 @@ router.post('/create_pay', async (req, res) => {
             items,
             amount: price,
             total: pay,
-            date: Date.now(), addres
+            date: Date.now(),
+            addres
         }
         { off ? newShop["off"] = off : null }
         await new Shop(newShop).save()
