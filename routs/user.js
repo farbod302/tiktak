@@ -345,4 +345,17 @@ router.post("/get_user_pays", (req, res) => {
 
 })
 
+
+
+router.post('/get_user_favor', (req, res) => {
+    const data = getBody(req.body)
+    const { userId } = data
+    User.findById(userId, { favorit: 1 }).then(result => {
+        res.json({
+            status: true,
+            favorit: result.favorit
+        })
+    })
+})
+
 module.exports = router

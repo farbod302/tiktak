@@ -200,13 +200,12 @@ const addScoreToIntroduser = (userId) => {
     const user = await User.findById(userId),
       introduserPhone = user.introduser,
       introduserId = await User.findOne({ "identity.phone": introduserPhone })
-    _id = introduserId._id
-    if (!_id) {
-      return resolve()
-    }
+      if (!introduserId) {
+        return resolve()
+      }
+      _id = introduserId._id
     var introduser = await User.findById(_id),
       score = introduser.score
-    console.log(score);
     if (score.includes(userId)) {
       return resolve()
     }
